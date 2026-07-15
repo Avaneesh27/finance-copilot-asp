@@ -16,7 +16,7 @@ that give any AI agent fast, structured financial intelligence:
 |---|---|---|
 | `POST /v1/wallet-health` | Is this token/wallet address safe? | ✅ Live |
 | `POST /v1/yield-scan` | Where's the best stablecoin yield right now? | ✅ Live |
-| `POST /v1/tax-report` | What does my on-chain tax activity look like? | 🔜 Coming soon (501) |
+| `POST /v1/tax-report` | What does my on-chain tax activity look like? | ✅ Live |
 
 Every endpoint returns a single JSON response — no multi-turn negotiation, no auth beyond
 what A2MCP requires, and includes a `pricingNote` field showing the intended x402
@@ -147,27 +147,52 @@ curl -X POST .../v1/yield-scan \
 
 ---
 
-### P2: Tax Report (Coming Soon)
+### P2: Tax Report
 
 ```bash
 curl -s -X POST https://<your-render-url>.onrender.com/v1/tax-report \
   -H "Content-Type: application/json" \
   -d '{
-    "address": "0xYourWalletAddress",
+    "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     "chain": "ethereum",
     "fromDate": "2025-01-01",
     "toDate": "2025-12-31",
     "costBasisMethod": "FIFO"
-  }'
+  }' | jq .
 ```
 
-Returns HTTP 501 with:
+**Expected response:**
 ```json
 {
-  "status": "coming_soon",
-  "message": "Tax report endpoint is under active development..."
+  "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+  "period": { "from": "2025-01-01", "to": "2025-12-31" },
+  "summary": {
+    "totalTransactions": 14,
+    "realizedGainUsd": 1284.50,
+    "realizedLossUsd": -120.40,
+    "netUsd": 1164.10
+  },
+  "transactions": [
+    {
+      "txHash": "0x123...",
+      "timestamp": "2025-06-15T10:30:00.000Z",
+      "asset": "ETH",
+      "amount": 0.5,
+      "type": "send",
+      "priceUsd": 3200.00,
+      "totalUsd": 1600.00,
+      "feeUsd": 8.50,
+      "realizedGainLossUsd": 450.00
+    }
+  ],
+  "dataSource": ["Deterministic Simulated Data"],
+  "disclaimer": "Informational only. Not tax, legal, or financial advice — consult a professional.",
+  "pricingNote": "Planned: $0.05/report via x402 micropayment — free during hackathon MVP.",
+  "generatedAt": "2026-07-16T01:00:00.000Z"
 }
 ```
+
+If `ETHERSCAN_API_KEY` is set as an env var, the endpoint retrieves actual block explorer history and queries DeFiLlama Coins API to compute historical cost basis. Otherwise, it gracefully falls back to deterministic simulated transactions to ensure it is 100% demo-safe.
 
 ---
 
@@ -183,16 +208,16 @@ OKX Agent  ──POST JSON──►  Express (Node 20 + TS)
                    │  zod validation     │
                    └──────────┬──────────┘
                               │
-           ┌──────────────────┼──────────────────┐
-           │                  │                  │
-    /wallet-health      /yield-scan        /tax-report
-           │                  │                  │
-    GoPlus API         DeFiLlama API        501 stub
-    (token+addr        (yields.llama.fi)
-     security)
-           │
-    scoring.ts         rank.ts
-    0-100 score        risk-adjusted APY
+            ┌──────────────────┼──────────────────┐
+            │                  │                  │
+     /wallet-health      /yield-scan        /tax-report
+            │                  │                  │
+     GoPlus API         DeFiLlama API      Etherscan API /
+     (token+addr        (yields.llama.fi)  Mock Simulator
+      security)
+            │                  │                  │
+     scoring.ts         rank.ts            costBasis.ts
+     0-100 score        risk-adjusted APY  FIFO Tax Engine
 ```
 
 **Design principles:**

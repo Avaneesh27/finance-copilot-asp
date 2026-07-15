@@ -19,10 +19,10 @@
   - [ ] Returns 200 with empty opportunities (not 404) when no pools match
   - [ ] Returns 400 on missing asset field
   - [ ] Defaults apply (all chains, $1M TVL, balanced) when optional fields omitted
-- [ ] `POST /v1/tax-report` gracefully stubbed (P2)
-  - [ ] Returns HTTP 501 (not 500, not 404, not hanging)
-  - [ ] Returns `{"status": "coming_soon", ...}` body
-  - [ ] Still returns 400 on malformed request
+- [x] `POST /v1/tax-report` fully working (P2)
+  - [x] Returns 200 with summary (realizedGainUsd, realizedLossUsd, netUsd) and transactions list
+  - [x] Graceful fallback to deterministic mock when explorer API key is missing (ensures 100% testable/demo-safe out of the box)
+  - [x] Returns 400 on malformed request (e.g. invalid date formats)
 
 ## Documentation
 - [ ] `README.md` with curl examples for all 3 endpoints
@@ -72,7 +72,7 @@ curl -X POST $BASE/v1/yield-scan \
   -H "Content-Type: application/json" \
   -d '{"chains":["ethereum"]}'
 
-# P2: Tax report → expect 501
+# P2: Tax report → expect 200
 curl -X POST $BASE/v1/tax-report \
   -H "Content-Type: application/json" \
   -d '{"address":"0xdAC17F958D2ee523a2206206994597C13D831ec7","chain":"ethereum","fromDate":"2025-01-01","toDate":"2025-12-31"}'
