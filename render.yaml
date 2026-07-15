@@ -1,0 +1,22 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: finance-copilot-asp
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LOG_LEVEL
+        value: info
+      - key: PORT
+        generateValue: false
+        value: "10000"
+      - key: GOPLUS_API_KEY
+        sync: false   # Set in Render dashboard — leave blank for keyless tier
+      - key: ETHERSCAN_API_KEY
+        sync: false   # Required for /v1/tax-report; stub returns 501 without it
