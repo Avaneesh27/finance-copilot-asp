@@ -16,6 +16,8 @@ services:
       - key: PORT
         generateValue: false
         value: "10000"
+      - key: PUBLIC_URL
+        value: "https://finance-copilot-asp.onrender.com"
       - key: GOPLUS_API_KEY
         sync: false   # Set in Render dashboard — leave blank for keyless tier
       - key: ETHERSCAN_API_KEY
