@@ -1,6 +1,7 @@
 import express from 'express';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
+import path from 'path';
 import { requestId } from './middleware/requestId.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -35,7 +36,8 @@ app.use(
   }),
 );
 
-// CORS — permissive for hackathon MVP
+// Serve landing page at root
+app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use((_req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
